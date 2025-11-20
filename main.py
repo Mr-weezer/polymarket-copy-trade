@@ -7,8 +7,9 @@ from dotenv import load_dotenv
 import os
 from datetime import datetime
 from py_clob_client.client import ClobClient
-from py_clob_client.clob_types import MarketOrderArgs, OrderType
+from py_clob_client.clob_types import MarketOrderArgs, OrderType, ApiCreds
 from py_clob_client.order_builder.constants import BUY, SELL
+from py_clob_client.constants import AMOY
 
 load_dotenv()
 
@@ -215,17 +216,15 @@ async def execute_copy_trade(trade_info):
             "https://clob.polymarket.com",
             key=PRIVATE_KEY,
             chain_id=137,
-            signature_type=SIGNATURE_TYPE,
-            funder=FUNDER
+            funder=FUNDER,
+            signature_type=2
         )
-        creds = client.create_or_derive_api_creds()
-        client.set_api_creds(creds)
+        client.set_api_creds(client.create_or_derive_api_creds())
         
         amount = trade_info['amount_usd'] * COPY_TRADE_MULTIPLIER
         
-        if amount < 0.01:
-            print(f"⚠️ Copy trade amount too small: ${amount:.2f}")
-            return False
+        if amount < 1.0:
+            amount = 1.0
         
         print(f"\n📈 Executing copy trade:")
         print(f"   Token ID: {trade_info['token_id']}")
@@ -233,7 +232,7 @@ async def execute_copy_trade(trade_info):
         print(f"   Amount: ${amount:.2f}")
         print(f"   Shares: {trade_info['shares']:.2f}" if trade_info['shares'] else "   Shares: N/A")
 
-        mo = MarketOrderArgs(token_id=trade_info['token_id'], amount=1.00, side=trade_info['side'], order_type=OrderType.FOK)
+        mo = MarketOrderArgs(token_id=trade_info['token_id'], amount=amount, side=trade_info['side'], order_type=OrderType.FOK)
         signed = client.create_market_order(mo)
         resp = client.post_order(signed, OrderType.FOK)
         print(resp)
@@ -244,19 +243,6 @@ async def execute_copy_trade(trade_info):
         import traceback
         traceback.print_exc()
         return False
-
-async def send_alert(event_type, log_data, decoded):
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print("\n🚨 NOUVEL ERC-1155 DÉTECTÉ !")
-    print(f"Timestamp: {timestamp}")
-    print(f"Type: {event_type}")
-    print(f"Contrat: {log_data['address']}")
-    print(f"Tx Hash: {log_data.get('transactionHash', 'N/A')}")
-    print(f"From: {decoded['from']}")
-    print(f"To: {decoded['to']}")
-    print(f"Token IDs: {decoded['ids']}")
-    print(f"Values: {decoded['values']}")
-    print("-" * 40)
 
 
 def decode_single(w3, log_data):
@@ -381,8 +367,6 @@ async def get_events():
         print(f"Réponse de souscription: {subscription_response}")
 
         while True:
-            await process_transaction(web3, "0x8fe6af21be3a382cc348e62f6125fadc4359487166c8f8ef01bff491c0b020e0")
-            await asyncio.sleep(100)
             try:
                 message = await asyncio.wait_for(ws.recv(), timeout=60)
                 response = json.loads(message)
@@ -403,7 +387,6 @@ async def get_events():
                             continue
                         
                         if decoded["from"].lower() == watch_addr.lower() or decoded["to"].lower() == watch_addr.lower():
-                            await send_alert(event_type, log_data, decoded)
                             await process_transaction(web3, log_data.get('transactionHash'))
                             
             except asyncio.TimeoutError:
